@@ -1,0 +1,234 @@
+<!-- chat/templates/chat/room.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+      <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+</head>
+<body>
+    <section class="msger">
+        <header class="msger-header">
+    <div class="msger-header-title">
+      <i class="fas fa-comment-alt"></i> PencilPie İletişim Servisi
+        {% for i in  kimle_kim_arasinda  %}
+            <span style="color: blue">{{ i }}</span>
+        {% endfor %}
+
+    </div>
+    <div class="msger-header-options">
+      <span><i class="fas fa-cog"></i></span>
+    </div>
+  </header>
+        <main id="chat-log" class="msger-chat">
+            {% for m in messagesfromdb %}
+                {% if m.user.username == request.user.username %}
+                    <div class="msg right-msg">
+                          <div
+                           class="msg-img"
+                           style="background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)"      ></div>
+
+                          <div class="msg-bubble">
+                            <div class="msg-info">
+                              <div class="msg-info-name">{{ m.user.username }}</div>
+                              <div class="msg-info-time">12:46</div>
+                            </div>
+
+                            <div class="msg-text">
+                                {{ m.content}}
+                            </div>
+                          </div>
+                    </div>
+                {% else %}
+                    <div class="msg left-msg">
+                              <div
+                               class="msg-img"
+                               style="background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)"
+                              ></div>
+
+                              <div class="msg-bubble">
+                                <div class="msg-info">
+                                  <div class="msg-info-name">{{ m.user.username }}</div>
+                                  <div class="msg-info-time">12:45</div>
+                                </div>
+
+                                <div class="msg-text">
+                                  {{ m.content}}
+                                </div>
+                              </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </main>
+
+
+     <div  class="msger-inputarea">
+    <input type="text" class="msger-input" placeholder="Dökül....">
+    <button class="msger-send-btn">Gönder</button>
+    </div>
+</section>
+    {{ room_name|json_script:"room-name" }}
+    <script>
+
+    $("#chat-log").animate({ scrollTop: $(document).height()*$(document).height() }, "slow");
+
+
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        // Gelen veriye göre textbox'a veri iletimi
+        chatSocket.onmessage = function(e) {
+
+$("#chat-log").animate({ scrollTop: $(document).height()*$(document).height() }, "slow");
+            const $data = JSON.parse(e.data);
+            var $isim="{{ request.user}}"
+            if ($data.username == $isim) {
+
+                $('#chat-log').append("<div class=\"msg right-msg\">\n" +
+                    "      <div\n" +
+                    "       class=\"msg-img\"\n" +
+                    "       style=\"background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)\"      ></div>\n" +
+                    "\n" +
+                    "      <div class=\"msg-bubble\">\n" +
+                    "        <div class=\"msg-info\">\n" +
+                    "          <div class=\"msg-info-name\">"+$data.username+"</div>\n" +
+                    "          <div class=\"msg-info-time\">"+$data.tarih+"</div>\n" +
+                    "        </div>\n" +
+                    "\n" +
+                    "        <div class=\"msg-text\">\n" +
+                   $data.message +
+                    "        </div>\n" +
+                    "      </div>\n" +
+                    "    </div>")
+            }else{
+                var audio = new Audio('{% static "sound/insight.ogg" %}');
+audio.play();
+                $('#chat-log').append("<div class=\"msg left-msg\">\n" +
+                "      <div\n" +
+                "       class=\"msg-img\"\n" +
+                "       style=\"background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)\"\n" +
+                "      ></div>\n" +
+                "\n" +
+                "      <div class=\"msg-bubble\">\n" +
+                "        <div class=\"msg-info\">\n" +
+                "          <div class=\"msg-info-name\">"+$data.username+"</div>\n" +
+                "          <div class=\"msg-info-time\">"+$data.tarih+"</div>\n" +
+                "        </div>\n" +
+                "\n" +
+                "        <div class=\"msg-text\">\n" +
+                $data.message +
+                "        </div>\n" +
+                "      </div>\n" +
+                "    </div>")
+            }
+
+
+            /*$('#chat-log').append("<small>23:44</small><p style='margin-left: 5px;  font-size:25px;'>" +
+
+                "<b style='color: red; '>"+$data.username+": </b>"
+                +$data.message
+                +""+" </p>")*/
+
+        };
+        var yeter;
+        // Sohbet beklenmedik şekilde kapanırsa;
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+         // Sohbet penceresine odaklanma ve enter tuşunu dinleme;
+        document.querySelector('.msger-input').focus();
+        document.querySelector('.msger-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('.msger-send-btn').click();
+            }
+        };
+        function uintToString(uintArray) {
+    var encodedString = String.fromCharCode.apply(null, uintArray),
+        decodedString = decodeURIComponent(escape(atob(encodedString)));
+    return decodedString;
+}
+        document.querySelector('.msger-send-btn').onclick = function(e) {
+            const messageInputDom = document.querySelector('.msger-input');
+            const message = messageInputDom.value;
+            var deg=new Uint8Array(yeter)
+            console.log(deg.buffer)
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'yeter':deg,
+
+            }));
+            messageInputDom.value = '';
+        };
+
+    </script>
+        <input type="file" id="file" />
+
+<script>
+    function handleFileSelect(evt) {
+
+        var files = evt.target.files; // FileList object
+
+        var selFile = files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = new Image;
+            img.onload = function() {
+              console.log("The width of the image is " + img.width + "px.");
+            };
+            img.src = reader.result;
+
+            console.log(img.width)
+           console.log(e.target.result);
+           yeter=e.target.result
+        };
+    
+        reader.onerror = function(e) {
+            console.log(e);
+        };
+        reader.readAsArrayBuffer(selFile);
+        console.log(selFile.sizeX)
+    }
+      function readURL(input) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            var img = new Image;
+            img.onload = function() {
+              console.log("The width of the image is " + img.width + "px.");
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+    document.getElementById('file').addEventListener('change', handleFileSelect, false);
+</script>
+ <script>
+        $(document).ready(function() {
+
+            var screenHeight = (window.screen.height - 290);
+
+            chgHeight = screenHeight + "px";
+
+            document.getElementById("chat-box").style.height = chgHeight;
+            alert(chgHeight);
+
+            $(".style-6").scrollTop($('.style-6').height())
+
+        });
+    </script>
+</body>
+</html>

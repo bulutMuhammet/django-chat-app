@@ -1,0 +1,6 @@
+django
+channels
+redis
+channels_redis
+
+sudo apt install redis-server

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hello OpenCV.js</title>
+<script
+  src="https://code.jquery.com/jquery-3.5.1.js"
+  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+<h2>Hello OpenCV.js</h2>
+<p id="status">OpenCV.js is loading...</p>
+<div>
+  <div class="inputoutput">
+    <img id="imageSrc" alt="No Image" />
+    <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+  </div>
+  <div class="inputoutput">
+    <canvas id="canvasOutput" ></canvas>
+    <div class="caption">canvasOutput</div>
+  </div>
+</div>
+<script type="text/javascript">
+let imgElement = document.getElementById('imageSrc');
+let inputElement = document.getElementById('fileInput');
+inputElement.addEventListener('change', (e) => {
+  imgElement.src = URL.createObjectURL(e.target.files[0]);
+}, false);
+imgElement.onload = function() {
+
+  let src = cv.imread(imgElement);
+let dst = new cv.Mat();
+// To distinguish the input and output, we graying the image.
+// You can try different conversions.
+cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+cv.imshow('canvasOutput', dst)
+src.delete();
+dst.delete();
+
+var imgArray = new Array();
+
+imgArray[0] = new Image();
+imgArray[0].src = '../../../static/js/image.jpg'
+    $.ajax({
+        type:"post",
+        dataType:"json",
+        data:{$mat: mat},
+        success:function (data) {
+
+
+        },
+        error:function () {
+
+        }
+    })
+   // mat.delete();
+
+};
+
+function onOpenCvReady() {
+  document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+}
+</script>
+
+<script async src="../../../static/js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</body>
+</html>

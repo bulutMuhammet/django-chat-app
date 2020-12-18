@@ -1,0 +1,24 @@
+<!-- chat/templates/chat/index.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>PENCIL PIE</title>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+      <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+</head>
+<body>
+    <center>
+        <form action="" method="post">
+            {% csrf_token %}
+        <input name="just" type="text" class="form-control" id="formGroupExampleInput" placeholder="İsminizi Girin" required="required">
+        <input name="justwho" type="text" class="form-control" id="formGroupExampleInput" placeholder="Kişiyi Girin" required="required">
+        <button type="submit" class="btn btn-primary">Sohbete Katıl</button>
+            </form>
+    </center>
+</body>
+</html>
